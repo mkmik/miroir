@@ -149,3 +149,50 @@ type errorCloser struct {
 func (e *errorCloser) Close() error {
 	return e.err
 }
+
+func TestError(t *testing.T) {
+	in := "foobarbaz"
+	wantErr := fmt.Errorf("test error")
+	r := &errorAfterNCalls{r: strings.NewReader(in), err: wantErr, left: 1}
+	left, right := miroir.New(r)
+
+	b := make([]byte, 3)
+	_, err := left.Read(b)
+	if got, want := string(b), "foo"; got != want {
+		t.Fatalf("got: %q, want: %q", got, want)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = left.Read(b)
+	if got, want := err, wantErr; got != want {
+		t.Fatalf("got: %v, want: %v", got, want)
+	}
+
+	b = make([]byte, 3)
+	_, err = right.Read(b)
+	if got, want := string(b), "foo"; got != want {
+		t.Fatalf("got: %q, want: %q", got, want)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = right.Read(b)
+	if got, want := err, wantErr; got != want {
+		t.Fatalf("got: %v, want: %v", got, want)
+	}
+}
+
+type errorAfterNCalls struct {
+	r    io.Reader
+	err  error
+	left int
+}
+
+func (r *errorAfterNCalls) Read(p []byte) (int, error) {
+	if r.left > 0 {
+		r.left -= 1
+		return r.r.Read(p)
+	}
+	return 0, r.err
+}
