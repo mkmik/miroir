@@ -6,8 +6,8 @@ import (
 	"sync"
 )
 
-// NewMiroir returns a pair of readers that will both independently read from the input reader.
-func NewMiroir(r io.Reader) (io.Reader, io.Reader) {
+// New returns a pair of readers that will both independently read from the input reader.
+func New(r io.Reader) (io.Reader, io.Reader) {
 	buf := bytes.NewBuffer(nil)
 	m := &miroir{
 		r:   io.TeeReader(r, buf),

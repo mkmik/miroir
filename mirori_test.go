@@ -14,7 +14,7 @@ import (
 
 func TestReadAll(t *testing.T) {
 	in := "foobarbaz"
-	left, right := miroir.NewMiroir(strings.NewReader(in))
+	left, right := miroir.New(strings.NewReader(in))
 
 	lb, err := io.ReadAll(left)
 	if err != nil {
@@ -76,7 +76,7 @@ func TestInterleaved(t *testing.T) {
 	}
 
 	for i, run := range testCases {
-		left, right = miroir.NewMiroir(strings.NewReader(in))
+		left, right = miroir.New(strings.NewReader(in))
 		for j, tc := range run {
 			t.Run(fmt.Sprint(i, j), func(t *testing.T) {
 				buf := make([]byte, tc.ln)
@@ -102,7 +102,7 @@ func TestInterleaved(t *testing.T) {
 func TestConcurrent(t *testing.T) {
 	in := randomString(rand.New(rand.NewSource(43)), 1024*1024)
 
-	left, right := miroir.NewMiroir(iotest.HalfReader(strings.NewReader(in)))
+	left, right := miroir.New(iotest.HalfReader(strings.NewReader(in)))
 
 	var wg sync.WaitGroup
 	for _, r := range []io.Reader{left, right} {
