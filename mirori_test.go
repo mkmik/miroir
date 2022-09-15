@@ -3,8 +3,11 @@ package miroir_test
 import (
 	"fmt"
 	"io"
+	"math/rand"
 	"strings"
+	"sync"
 	"testing"
+	"testing/iotest"
 
 	"github.com/mkmik/miroir"
 )
@@ -94,4 +97,33 @@ func TestInterleaved(t *testing.T) {
 			})
 		}
 	}
+}
+
+func TestTestReader(t *testing.T) {
+	in := randomString(rand.New(rand.NewSource(43)), 1024*1024)
+
+	left, right := miroir.NewMiroir(iotest.HalfReader(strings.NewReader(in)))
+
+	var wg sync.WaitGroup
+	for _, r := range []io.Reader{left, right} {
+		wg.Add(1)
+		go func(r io.Reader) {
+			defer wg.Done()
+
+			if err := iotest.TestReader(r, []byte(in)); err != nil {
+				t.Error(err)
+			}
+		}(r)
+	}
+	wg.Wait()
+}
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func randomString(r *rand.Rand, n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[r.Intn(len(letterRunes))]
+	}
+	return string(b)
 }
