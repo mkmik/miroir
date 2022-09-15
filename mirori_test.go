@@ -43,16 +43,22 @@ func TestInterleaved(t *testing.T) {
 		{right, "foo", false},
 		{left, "bar", false},
 		{left, "baz", false},
+		{left, "", true},
 		{right, "bar", false},
 		{right, "baz", false},
+		{left, "", true},
 	}
 
-	buf := make([]byte, 3)
 	for i, tc := range testCases {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			buf := make([]byte, len(tc.want))
 			n, err := tc.r.Read(buf)
-			if err != nil && err != io.EOF {
+			eof := err == io.EOF
+			if err != nil && !eof {
 				t.Fatal(err)
+			}
+			if got, want := eof, tc.last; got != want {
+				t.Fatalf("got: %v, want: %v", got, want)
 			}
 			if got, want := n, len(tc.want); got != want {
 				t.Fatalf("got: %d, want: %d", got, want)
