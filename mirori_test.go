@@ -1,6 +1,7 @@
 package miroir_test
 
 import (
+	"fmt"
 	"io"
 	"strings"
 	"testing"
@@ -33,47 +34,31 @@ func TestInterleaved(t *testing.T) {
 	in := "foobarbaz"
 	left, right := miroir.NewMiroir(strings.NewReader(in))
 
+	testCases := []struct {
+		r    io.Reader
+		want string
+	}{
+		{left, "foo"},
+		{right, "foo"},
+		{left, "bar"},
+		{left, "baz"},
+		{right, "bar"},
+		{right, "baz"},
+	}
+
 	buf := make([]byte, 3)
-
-	if _, err := left.Read(buf); err != nil {
-		t.Fatal(err)
-	}
-	if got, want := string(buf), "foo"; got != want {
-		t.Errorf("got: %q, want: %q", got, want)
-	}
-
-	if _, err := left.Read(buf); err != nil {
-		t.Fatal(err)
-	}
-	if got, want := string(buf), "bar"; got != want {
-		t.Errorf("got: %q, want: %q", got, want)
-	}
-
-	if _, err := right.Read(buf); err != nil {
-		t.Fatal(err)
-	}
-	if got, want := string(buf), "foo"; got != want {
-		t.Errorf("got: %q, want: %q", got, want)
-	}
-
-	if _, err := left.Read(buf); err != nil {
-		t.Fatal(err)
-	}
-	if got, want := string(buf), "baz"; got != want {
-		t.Errorf("got: %q, want: %q", got, want)
-	}
-
-	if _, err := right.Read(buf); err != nil {
-		t.Fatal(err)
-	}
-	if got, want := string(buf), "bar"; got != want {
-		t.Errorf("got: %q, want: %q", got, want)
-	}
-
-	if _, err := right.Read(buf); err != nil {
-		t.Fatal(err)
-	}
-	if got, want := string(buf), "bar"; got != want {
-		t.Errorf("got: %q, want: %q", got, want)
+	for i, tc := range testCases {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			n, err := tc.r.Read(buf)
+			if err != nil && err != io.EOF {
+				t.Fatal(err)
+			}
+			if got, want := n, len(tc.want); got != want {
+				t.Fatalf("got: %d, want: %d", got, want)
+			}
+			if got, want := string(buf), tc.want; got != want {
+				t.Fatalf("got: %q, want: %q", got, want)
+			}
+		})
 	}
 }
