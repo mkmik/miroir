@@ -27,7 +27,7 @@ func (m *miroir) read(start int, p []byte) (int, error) {
 	defer m.Unlock()
 
 	if start < m.buf.Len() {
-		return m.buf.Read(p)
+		return bytes.NewReader(m.buf.Bytes()).ReadAt(p, int64(start))
 	} else {
 		return m.r.Read(p)
 	}

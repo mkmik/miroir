@@ -33,17 +33,18 @@ func TestReadAll(t *testing.T) {
 func TestInterleaved(t *testing.T) {
 	in := "foobarbaz"
 	left, right := miroir.NewMiroir(strings.NewReader(in))
-
+	_ = right
 	testCases := []struct {
 		r    io.Reader
 		want string
+		last bool
 	}{
-		{left, "foo"},
-		{right, "foo"},
-		{left, "bar"},
-		{left, "baz"},
-		{right, "bar"},
-		{right, "baz"},
+		{left, "foo", false},
+		{right, "foo", false},
+		{left, "bar", false},
+		{left, "baz", false},
+		{right, "bar", false},
+		{right, "baz", false},
 	}
 
 	buf := make([]byte, 3)
@@ -56,7 +57,7 @@ func TestInterleaved(t *testing.T) {
 			if got, want := n, len(tc.want); got != want {
 				t.Fatalf("got: %d, want: %d", got, want)
 			}
-			if got, want := string(buf), tc.want; got != want {
+			if got, want := string(buf[:n]), tc.want; got != want {
 				t.Fatalf("got: %q, want: %q", got, want)
 			}
 		})
