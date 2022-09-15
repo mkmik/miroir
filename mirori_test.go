@@ -36,22 +36,23 @@ func TestInterleaved(t *testing.T) {
 	_ = right
 	testCases := []struct {
 		r    io.Reader
+		ln   int
 		want string
 		last bool
 	}{
-		{left, "foo", false},
-		{right, "foo", false},
-		{left, "bar", false},
-		{left, "baz", false},
-		{left, "", true},
-		{right, "bar", false},
-		{right, "baz", false},
-		{left, "", true},
+		{left, 3, "foo", false},
+		{right, 3, "foo", false},
+		{left, 3, "bar", false},
+		{left, 3, "baz", false},
+		{left, 3, "", true},
+		{right, 3, "bar", false},
+		{right, 4, "baz", true},
+		{left, 3, "", true},
 	}
 
 	for i, tc := range testCases {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			buf := make([]byte, len(tc.want))
+			buf := make([]byte, tc.ln)
 			n, err := tc.r.Read(buf)
 			eof := err == io.EOF
 			if err != nil && !eof {
