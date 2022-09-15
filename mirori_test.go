@@ -99,7 +99,7 @@ func TestInterleaved(t *testing.T) {
 	}
 }
 
-func TestTestReader(t *testing.T) {
+func TestConcurrent(t *testing.T) {
 	in := randomString(rand.New(rand.NewSource(43)), 1024*1024)
 
 	left, right := miroir.NewMiroir(iotest.HalfReader(strings.NewReader(in)))
