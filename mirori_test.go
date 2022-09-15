@@ -127,3 +127,25 @@ func randomString(r *rand.Rand, n int) string {
 	}
 	return string(b)
 }
+
+func TestClose(t *testing.T) {
+	wantErr := fmt.Errorf("test error")
+	r := &errorCloser{Reader: strings.NewReader("foobarbaz"), err: wantErr}
+	left, right := miroir.New(r)
+	if err := left.Close(); err != nil {
+		t.Fatal(err)
+	}
+	err := right.Close()
+	if got, want := err, wantErr; got != want {
+		t.Fatalf("got: %v, want: %v", got, want)
+	}
+}
+
+type errorCloser struct {
+	io.Reader
+	err error
+}
+
+func (e *errorCloser) Close() error {
+	return e.err
+}
