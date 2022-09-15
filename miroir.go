@@ -27,7 +27,13 @@ func (m *miroir) read(start int, p []byte) (int, error) {
 	defer m.Unlock()
 
 	if start < m.buf.Len() {
-		return bytes.NewReader(m.buf.Bytes()).ReadAt(p, int64(start))
+		n, err := bytes.NewReader(m.buf.Bytes()).ReadAt(p, int64(start))
+		// consume the buffer till the end of the buffer and let the client
+		// re-issue another read to poll for more data in the upstream reader.
+		if err == io.EOF {
+			err = nil
+		}
+		return n, err
 	} else {
 		return m.r.Read(p)
 	}

@@ -53,24 +53,22 @@ func TestInterleaved(t *testing.T) {
 		},
 		{
 			{&left, 3, "foo", false},
-			{&right, 3, "foo", false},
 			{&left, 3, "bar", false},
 			{&left, 3, "baz", false},
 			{&left, 3, "", true},
+			{&right, 3, "foo", false},
 			{&right, 3, "bar", false},
-			{&right, 4, "baz", true},
+			{&right, 4, "baz", false},
+			{&right, 3, "", true},
 		},
 		{
 			{&left, 3, "foo", false},
-			{&left, 3, "bar", false},
-			{&left, 3, "baz", false},
+			{&right, 6, "foo", false},
+			{&left, 10, "barbaz", false},
+			{&left, 10, "", true},
+			{&right, 10, "barbaz", false},
+			{&right, 3, "", true},
 			{&left, 3, "", true},
-			{&right, 3, "foo", false},
-			{&right, 3, "bar", false},
-			{&right, 4, "baz", true},
-		},
-		{
-			{&left, 3, "foobar", false},
 		},
 	}
 
